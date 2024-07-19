@@ -21,6 +21,8 @@ function HeaderBar() {
             <Link to="aboutus" className='nav-link'>About Us</Link>
             <Link to="invoices" className='nav-link'>Invoices </Link>
             <Link to="weather" className='nav-link'>Weather </Link>
+            <Link to="weatherXhr" className='nav-link'>Weather_XHR </Link>
+            <Link to="weatherF" className='nav-link'>Weather_Fetch </Link>
 
             {/* <NavDropdown title="Dropdown" id="basic-nav-dropdown">
               <NavDropdown.Item href="#action/3.1">Action</NavDropdown.Item>

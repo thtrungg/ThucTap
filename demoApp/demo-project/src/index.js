@@ -13,6 +13,8 @@ import NotFound from './component/NotFound';
 import Invoices from './component/Invoices';
 import Invoice from './component/Invoice';
 import Weather from './component/weather/Weather';
+import Weather_useXHR from './component/weather/Weather_useXHR';
+import Weather_useFetch from './component/weather/Weather_useFetch';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
@@ -23,6 +25,8 @@ root.render(
             <Route path='sport' element={<SportPage/>} />
             <Route path='aboutus' element={<AboutUsPage/>} />
             <Route path='weather' element={<Weather/>} />
+            <Route path='weatherXhr' element={<Weather_useXHR/>} />
+            <Route path='weatherF' element={<Weather_useFetch/>} />
 
             <Route index element={<HomePage />} />
 
