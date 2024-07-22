@@ -16,7 +16,7 @@
     - Logic code cập nhật state phức tạp 
     - Ứng dụng có số lượng code lớn có nhiều người làm chung 
     - Cần debug và muốn xem các state được cập nhật tại bất kì khoảng thời gian nào
-##Các thành phần của Redux
+## Các thành phần của Redux
     Có 3 thành phần của Redux: Actions, Store, Reducers
     - Actions đơn giản là các events. Chúng là cách mà chúng ta send data từ app đến Redux store. Những data này có thể là từ sự tương tác của user vs app, API calls hoặc cũng có thể là từ form submission.
         - Actions được gửi bằng cách sử dụng store.dispatch() method, chúng phải có một type property để biểu lộ loại action để thực hiện. Chúng cũng phải có một payload chứa thông tin. Actions được tạo thông qua một action creator.
