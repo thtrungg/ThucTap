@@ -23,6 +23,7 @@ function HeaderBar() {
             <Link to="weather" className='nav-link'>Weather </Link>
             <Link to="weatherXhr" className='nav-link'>Weather_XHR </Link>
             <Link to="weatherF" className='nav-link'>Weather_Fetch </Link>
+            <Link to="view" className='nav-link'>View </Link>
 
             {/* <NavDropdown title="Dropdown" id="basic-nav-dropdown">
               <NavDropdown.Item href="#action/3.1">Action</NavDropdown.Item>
