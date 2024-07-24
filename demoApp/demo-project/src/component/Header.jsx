@@ -11,19 +11,19 @@ function HeaderBar() {
   return (
     <Navbar expand="lg" className="bg-body-tertiary">
       <Container>
-        <Link to='/' className='navbar-brand'>Demo App</Link>
+        <Link to='/' className='navbar-brand'>AccurateWeather</Link>
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
         <Navbar.Collapse id="basic-navbar-nav">
           <Nav className="me-auto">
 
-            <Link to="/" className='nav-link'>Home</Link>
-            <Link to="sport" className='nav-link'>Sport</Link>
-            <Link to="aboutus" className='nav-link'>About Us</Link>
-            <Link to="invoices" className='nav-link'>Invoices </Link>
-            <Link to="weather" className='nav-link'>Weather </Link>
-            <Link to="weatherXhr" className='nav-link'>Weather_XHR </Link>
-            <Link to="weatherF" className='nav-link'>Weather_Fetch </Link>
-            <Link to="view" className='nav-link'>View </Link>
+            <Link to="/" className='nav-link'>HOME</Link>
+            {/* <Link to="sport" className='nav-link'>Sport</Link> */}
+            {/* <Link to="aboutus" className='nav-link'>About Us</Link> */}
+            {/* <Link to="invoices" className='nav-link'>Invoices </Link> */}
+            <Link to="weather" className='nav-link'>TODAY </Link>
+            <Link to="weatherXhr" className='nav-link'>DAILY </Link>
+            <Link to="weatherF" className='nav-link'>HOURLY </Link>
+            <Link to="view" className='nav-link'>Todo App </Link>
 
             {/* <NavDropdown title="Dropdown" id="basic-nav-dropdown">
               <NavDropdown.Item href="#action/3.1">Action</NavDropdown.Item>

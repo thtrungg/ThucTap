@@ -1,109 +1,107 @@
-# Hiệu ứng Khai báo (Declarative Effects)
+# Redux - Saga
+***Redux Saga hoạt động như một lớp trung gian giúp quản lý các side effects (như API calls, xử lý bất đồng bộ, v.v.) một cách có tổ chức và rõ ràng. Để làm rõ hơn, đây là luồng hoạt động của Redux Saga trong ứng dụng Redux:***
+### Luồng Hoạt Động Cơ Bản của Redux Saga
+1. User Interaction: Khi người dùng thực hiện 1 hành động hoặc 1 sự kiện, 1 action sẽ được dispatch đến Redux store.
+2. Reducer xử lý Action: Reducer nhận action và cập nhật state trong store ứng với hành động nếu cần. Tuy nhiên nếu như action này yêu cầu 1 Side Effect (Như gọi API ), Reducer sẽ không trực tiếp xử lý việc đó. 
+> Side effects là những tác vụ không thuần túy (impure) như gọi API, tương tác với DOM, đăng ký hoặc hủy đăng ký sự kiện, và nhiều tác vụ khác mà không thể thực hiện trực tiếp trong quá trình render
+3. Saga Intercepts the Action: Saga middleware sẽ lắng nghe các action được dispatch đến store. Saga nhận 1 action nó đang theo dõi(thông qua: `take`,`takeEvery`,`takeLatest`,...) nó sẽ bắt đầu xử lý.
+4. Saga Executes Side Effects: Sage sẽ sử dụng các hiệu ứng như: `call`,`fork`,`put`,`all` để thực hiện side effects.
+5. Handling Side Effects: Saga có thể xử lý các side effects và sau đó dispatch một action mới để cập nhật state của ứng dụng dựa trên kết quả của side effect đó. Ví dụ, khi API trả về dữ liệu, saga có thể dispatch một action thành công hoặc thất bại để cập nhật state.
+6. Reducers Update State: Khi saga dispatch action mới, reducers nhận được các action này và cập nhật state của store tương ứng. Điều này sẽ làm giao diện người dùng (UI) cập nhật dựa trên state mới.
+## Kết nối Middleware Saga
+`createSagaMiddleware(options)`\
+Tạo 1 Redux middleware và kết nối Saga với Redux Store
+```JS
+import { configureStore } from '@reduxjs/toolkit';
+import createSagaMiddleware from 'redux-saga';
+import { composeWithDevTools } from '@redux-devtools/extension';
 
-Trong redux-saga, các Sagas được triển khai bằng cách sử dụng các hàm Generator. Để diễn đạt logic của Saga, chúng ta `yield` các đối tượng JavaScript thuần túy từ Generator. Chúng ta gọi các đối tượng này là Hiệu ứng (Effects). Một Hiệu ứng là một đối tượng chứa thông tin để được middleware giải thích. Bạn có thể xem các Hiệu ứng như những hướng dẫn cho middleware để thực hiện một số thao tác (ví dụ: gọi một hàm bất đồng bộ, phát hành một hành động đến store, v.v.).
+import rootReducer from './reducer';
+import rootSaga from './sagas';
 
-Để tạo ra Hiệu ứng, bạn sử dụng các hàm được cung cấp bởi thư viện trong gói `redux-saga/effects`.
+// Tạo middleware saga
+const sagaMiddleware = createSagaMiddleware();
 
-Trong phần này và phần tiếp theo, chúng ta sẽ giới thiệu một số Hiệu ứng cơ bản. Và xem cách mà khái niệm này cho phép các Sagas dễ dàng được kiểm tra.
+// Cấu hình store với Redux Toolkit
+const store = configureStore({
+  reducer: rootReducer,
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware({ thunk: false }).concat(sagaMiddleware),
+  devTools: composeWithDevTools(),
+});
 
-## Yield Một Promise
+// Chạy saga middleware
+sagaMiddleware.run(rootSaga);
 
-Các Sagas có thể `yield` các Hiệu ứng dưới nhiều hình thức. Cách dễ nhất là `yield` một Promise.
-
-Ví dụ, giả sử chúng ta có một Saga theo dõi hành động `PRODUCTS_REQUESTED`. Đối với mỗi hành động phù hợp, nó bắt đầu một tác vụ để lấy danh sách sản phẩm từ máy chủ.
-
-```js
-import { takeEvery } from 'redux-saga/effects'
-import Api from './path/to/api'
-
-function* watchFetchProducts() {
-  yield takeEvery('PRODUCTS_REQUESTED', fetchProducts)
-}
-
-function* fetchProducts() {
-  const products = yield Api.fetch('/products')
-  console.log(products)
-}
+export default store;
 ```
+## Saga Effects: Call, Fork, All
+- `call` Sử dụng để thực hiện một hàm hoặc một API request. Hàm này có thể là một hàm bất đồng bộ (async function). Ví dụ:
+```JS
+import { call } from 'redux-saga/effects';
 
-Trong ví dụ trên, chúng ta gọi trực tiếp Api.fetch từ bên trong Generator (Trong các hàm Generator, bất kỳ biểu thức nào ở bên phải của yield đều được đánh giá và sau đó kết quả được yield cho caller).
-
-Api.fetch('/products') kích hoạt một yêu cầu AJAX và trả về một Promise sẽ được giải quyết với phản hồi đã giải quyết, yêu cầu AJAX sẽ được thực thi ngay lập tức. Đơn giản và theo cách thường thấy, nhưng...
-
-Giả sử chúng ta muốn kiểm tra generator trên:
-
-```javascript
-const iterator = fetchProducts()
-assert.deepEqual(iterator.next().value, ??) // chúng ta mong đợi gì?
-```
-Chúng ta muốn kiểm tra kết quả của giá trị đầu tiên được yield bởi generator. Trong trường hợp của chúng ta, đó là kết quả của việc chạy Api.fetch('/products'), đây là một Promise. Việc thực thi dịch vụ thực tế trong các bài kiểm tra không phải là một phương pháp khả thi hay thực tế, vì vậy chúng ta phải giả lập hàm Api.fetch, tức là chúng ta sẽ phải thay thế hàm thực tế bằng một cái giả mà không thực sự thực hiện yêu cầu AJAX nhưng chỉ kiểm tra rằng chúng ta đã gọi Api.fetch với các tham số đúng ('/products' trong trường hợp của chúng ta).
-
-Việc giả lập làm cho việc kiểm tra trở nên khó khăn hơn và ít đáng tin cậy hơn. Mặt khác, các hàm trả về giá trị dễ kiểm tra hơn, vì chúng ta có thể sử dụng một phương pháp so sánh đơn giản để kiểm tra kết quả. Đây là cách viết các bài kiểm tra đáng tin cậy nhất.
-
-
-(...) equal(), theo bản chất, trả lời hai câu hỏi quan trọng nhất mà mỗi bài kiểm tra đơn vị phải trả lời, nhưng hầu hết không làm:
-
-Kết quả thực tế là gì?
-Kết quả mong đợi là gì?
-Nếu bạn kết thúc một bài kiểm tra mà không trả lời được hai câu hỏi đó, bạn không có một bài kiểm tra đơn vị thực sự. Bạn có một bài kiểm tra lỏng lẻo, nửa vời.
-
-_Tạo Mô Tả Cuộc Gọi Hàm_
-
-Những gì chúng ta thực sự cần làm là đảm bảo rằng tác vụ fetchProducts yield một cuộc gọi với hàm đúng và các tham số đúng.
-
-Thay vì gọi hàm bất đồng bộ trực tiếp từ bên trong Generator, chúng ta có thể chỉ yield một mô tả của cuộc gọi hàm. Tức là, chúng ta sẽ yield một đối tượng trông giống như:
-
-```javascript
-// Hiệu ứng -> gọi hàm Api.fetch với `./products` là đối số
-{
-  CALL: {
-    fn: Api.fetch,
-    args: ['/products']
-  }
+function* fetchUser() {
+  const user = yield call(api.fetchUser);
+  // Xử lý dữ liệu user
 }
 ```
-Nói cách khác, Generator sẽ yield các đối tượng thuần túy chứa các hướng dẫn, và middleware redux-saga sẽ chịu trách nhiệm thực hiện các hướng dẫn đó và trả về kết quả của việc thực hiện chúng cho Generator. Cách này, khi kiểm tra Generator, tất cả những gì chúng ta cần làm là kiểm tra rằng nó yield hướng dẫn mong đợi bằng cách thực hiện một so sánh đơn giản trên đối tượng được yield ra.
+- `fork` Dùng để tạo 1 saga không đồng bộ, cho phép saga cha không cần chời đợi nó hoàn thành. Ví dụ: 
+```Js
+import { fork } from 'redux-saga/effects';
 
-Vì lý do này, thư viện cung cấp một cách khác để thực hiện các cuộc gọi bất đồng bộ.
-
-```javascript
-import { call } from 'redux-saga/effects'
-
-function* fetchProducts() {
-  const products = yield call(Api.fetch, '/products')
-  // ...
+function* watchFetchUser() {
+  yield fork(fetchUser);
 }
 ```
-Bây giờ chúng ta sử dụng hàm call(fn, ...args). Sự khác biệt so với ví dụ trước là giờ đây chúng ta không thực hiện cuộc gọi fetch ngay lập tức, thay vào đó, call tạo ra một mô tả của hiệu ứng. Giống như trong Redux bạn sử dụng các hàm tạo hành động để tạo ra một đối tượng thuần túy mô tả hành động sẽ được thực thi bởi Store, call tạo ra một đối tượng thuần túy mô tả cuộc gọi hàm. Middleware redux-saga sẽ chịu trách nhiệm thực hiện cuộc gọi hàm và tiếp tục Generator với phản hồi đã giải quyết.
+- `all` dùng để thực hiện nhiều saga đồng thời và chờ đợi cho tất cả saga đó hoàn thành. VÍ dụ: 
+```Js
+import { all } from 'redux-saga/effects';
 
-Điều này cho phép chúng ta dễ dàng kiểm tra Generator ngoài môi trường Redux. Bởi vì call chỉ là một hàm trả về một đối tượng thuần túy.
-
-```javascript
-import { call } from 'redux-saga/effects'
-import Api from '...'
-
-const iterator = fetchProducts()
-
-// mong đợi một hướng dẫn gọi
-assert.deepEqual(
-  iterator.next().value,
-  call(Api.fetch, '/products'),
-  "fetchProducts nên `yield` một hiệu ứng call(Api.fetch, './products')"
-)
+function* rootSaga() {
+  yield all([
+    call(fetchUser),
+    call(fetchPosts),
+  ]);
+}
 ```
-Bây giờ chúng ta không cần phải giả lập bất kỳ điều gì, và một bài kiểm tra so sánh cơ bản là đủ.
+## Dispatch Redux Actions từ Sagas bằng `put`
+- `put` là một effect creator của Redux Saga dùng để dispatch actions từ bên trong một saga.
+- `put` được gọi từ bên trong một saga để gửi actions đến Redux store sau khi xử lý side effects hoặc thực hiện các tác vụ bất đồng bộ.
+> Tạo một effect mô tả hành động cần dispatch từ trong một saga, và saga middleware sẽ thực hiện việc dispatch action.
 
-Lợi ích của các cuộc gọi khai báo là chúng ta có thể kiểm tra toàn bộ logic bên trong một Saga bằng cách lặp qua Generator và thực hiện một bài kiểm tra deepEqual trên các giá trị được yield liên tiếp. Đây là một lợi ích thực sự, vì các thao tác bất đồng bộ phức tạp của bạn không còn là các hộp đen, và bạn có thể kiểm tra chi tiết logic hoạt động của chúng bất kể mức độ phức tạp của nó.
+Ví dụ: 
+```Js
+import { put } from 'redux-saga/effects';
 
-Gọi Phương Thức Đối Tượng
-call cũng hỗ trợ việc gọi các phương thức đối tượng, bạn có thể cung cấp một ngữ cảnh this cho các hàm được gọi bằng cách sử dụng dạng sau:
-
-```javascript
-yield call([obj, obj.method], arg1, arg2, ...) // như thể chúng ta đã gọi obj.method(arg1, arg2 ...)
-apply là một bí danh cho dạng gọi phương thức
+function* exampleSaga() {
+  yield put({ type: 'ACTION_TYPE', payload: data });
+}
 ```
+## Generator Functions và Yield Returns
+**Redux Saga sử dụng generator functions để điều phối các side effects. Generator functions là các hàm có thể tạm dừng và tiếp tục thực hiện từ điểm mà chúng dừng lại bằng cách sử dụng yield.**
+**
+> Hàm generator function trong JavaScript, được định nghĩa bằng cách sử dụng cú pháp `function*`
 
-```javascript
-yield apply(obj, obj.method, [arg1, arg2, ...])
+Ví dụ: 
+```Js
+function* mySaga() {
+  const result = yield call(api.fetchData);
+  console.log(result);
+}
 ```
-call và apply rất phù hợp cho các hàm trả về kết quả Promise. Một hàm khác cps có thể được sử dụng để xử lý các hàm kiểu Node (ví dụ: fn(...args, callback) nơi callback có dạng (error, result) => ()). cps là viết tắt của Continuation Passing Style.
+- Khi saga gặp lệnh yield call(api.fetchData), nó sẽ:
+    - Gọi hàm api.fetchData: Đây là hàm thực hiện cuộc gọi API.
+    - Tạm dừng saga cho đến khi Promise trả về từ api.fetchData được hoàn thành (có nghĩa là khi dữ liệu từ API đã được nhận).
+
+- Khi API hoàn thành:
+  - Saga sẽ tiếp tục thực thi từ điểm yield call(api.fetchData) và gán kết quả trả về từ API cho biến result.
+  - console.log(result): In kết quả (dữ liệu từ API) ra console.
+
+### Lợi ích của hàm generator function 
+1. Quản Lý Bất Đồng Bộ
+- Tạm Dừng và Tiếp Tục: Generator functions cho phép bạn tạm dừng thực thi tại một điểm (sử dụng yield) và tiếp tục từ điểm đó sau khi một giá trị hoặc Promise được giải quyết. Điều này giúp bạn dễ dàng quản lý các tác vụ bất đồng bộ mà không cần phải sử dụng các callback hàm lồng nhau hoặc Promise.then.
+2. Dễ dàng tạo vòng lặp
+- Tạo Iterator: Generator functions tự động trả về một iterator, cho phép bạn duyệt qua một chuỗi các giá trị. Bạn có thể sử dụng for...of hoặc phương thức next() của iterator để lấy giá trị tiếp theo. Điều này hữu ích cho việc xử lý các tập hợp dữ liệu hoặc tạo chuỗi giá trị liên tục.
+3. Kiểm Soát Luồng Chương Trình
+- Xử Lý Phức Tạp: Generator functions cho phép bạn điều khiển luồng chương trình một cách chi tiết hơn. Bạn có thể tạm dừng và tiếp tục thực thi tại các điểm khác nhau trong quá trình thực thi của hàm.
+4. Sử Dụng Trong Redux Saga

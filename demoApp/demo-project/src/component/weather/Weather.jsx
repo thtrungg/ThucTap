@@ -1,37 +1,43 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import React, { useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchWeatherRequest } from './actions/actions';
 
-function Weather() {
-    const [weatherData, setWeatherData] = useState(null);
+const WeatherApp = () => {
+  const [city, setCity] = useState('');
+  const dispatch = useDispatch();
+  const weatherData = useSelector(state => state.weatherData);
+  const loading = useSelector(state => state.loading);
+  const error = useSelector(state => state.error);
 
-    useEffect(() => {
-        const getData = async () => {
-            try {
-                let response = await axios.get('https://api.openweathermap.org/data/2.5/weather?lat=21.0294498&lon=105.8544441&appid=cbb1cc320e49ce9ea46821e0b5df4bea');
-                console.log(response);
-                setWeatherData(response.data);
-            } catch (e) {
-                console.log(e);
-            }
-        };
-        getData();
-    }, []);
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    dispatch(fetchWeatherRequest(city));
+  };
 
-    return (
+  return (
+    <div className="container">
+      <h1>Weather Search</h1>
+      <form onSubmit={handleSubmit}>
+        <input 
+          type="text"
+          value={city}
+          onChange={(e) => setCity(e.target.value)}
+          placeholder="Enter city name"
+        />
+        <button type="submit">Search</button>
+      </form>
+      {loading && <div>Loading...</div>}
+      {error && <div>Error: {error}</div>}
+      {weatherData && (
         <div>
-            {weatherData ? (
-                <div>
-                    <h1>Weather Ha Noi</h1>
-                    <div>Temperature: {(weatherData.main.temp - 273.15).toFixed()}°C</div>
-                    <div>Weather: {weatherData.weather[0].description}</div>
-                    <div>Humidity: {weatherData.main.humidity}</div>
-
-                </div>
-            ) : (
-                <div>Loading</div>
-            )}
+          <h2>{weatherData.location.name}</h2>
+          <div>Temperature: {(weatherData.current.temp_c).toFixed(1)}°C</div>
+          <div>Weather: {weatherData.current.condition.text}</div>
+          <div>Humidity: {weatherData.current.humidity}%</div>
         </div>
-    );
-}
+      )}
+    </div>
+  );
+};
 
-export default Weather;
+export default WeatherApp;

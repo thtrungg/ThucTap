@@ -1,10 +1,16 @@
-import { legacy_createStore as createStore} from 'redux'
-import { configureStore } from '@reduxjs/toolkit'
-import { composeWithDevTools } from "@redux-devtools/extension";
+import { createStore, applyMiddleware } from 'redux';
+import createSagaMiddleware from 'redux-saga';
+import { Provider } from 'react-redux';
+import weatherReducer from '../../weather/reducer/reducer';
+import watchFetchWeather from '../../weather/saga/fetchData';
 
-import rootReducer from './reducer';
-const enhancers = composeWithDevTools()
+const sagaMiddleware = createSagaMiddleware();
 
-const store = createStore(rootReducer , enhancers);
+const store = createStore(
+  weatherReducer,
+  applyMiddleware(sagaMiddleware)
+);
+
+sagaMiddleware.run(watchFetchWeather);
 
 export default store;

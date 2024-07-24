@@ -27,18 +27,14 @@ function Weather_useFetch() {
 
 
   return (
-    <div>Weather use Fetch
-        {weatherData ? (
-                <div>
-                    <h1>Weather Ha Noi</h1>
-                    <div>Temperature: {(weatherData.main.temp - 273.15).toFixed()}°C</div>
-                    <div>Weather: {weatherData.weather[0].description}</div>
-                    <div>Humidity: {weatherData.main.humidity}</div>
+    <div>
+      <div className='container'>
+      <h1>HOURLY</h1>
+      <div>Temperature: {(weatherData.main.temp - 273.15).toFixed()}°C</div>
+      <div>Weather: {weatherData.weather[0].description}</div>
+      <div>Humidity: {weatherData.main.humidity}</div>
 
-                </div>
-            ) : (
-                <div>Loading</div>
-            )}
+      </div>
     </div>
   );
 }

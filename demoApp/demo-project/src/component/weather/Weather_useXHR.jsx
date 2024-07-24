@@ -19,10 +19,10 @@ function Weather_useXHR() {
 
 
 return (
-    <div>Weather use XHR
+    <div>
         {weatherData ? (
-                <div>
-                    <h1>Weather Ha Noi</h1>
+                <div className='container'>
+                    <h1>DAILY</h1>
                     <div>Temperature: {(weatherData.main.temp - 273.15).toFixed()}°C</div>
                     <div>Weather: {weatherData.weather[0].description}</div>
                     <div>Humidity: {weatherData.main.humidity}</div>
