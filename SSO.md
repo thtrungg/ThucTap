@@ -26,4 +26,4 @@ Quy trình SSO như sau:
 - Dịch vụ sẽ kiểm tra xem người dùng đã được xác thực trước đó trong hệ thống hay chưa. Nếu đã xác thực, dịch vụ sẽ gửi một phản hồi xác nhận xác thực đến ứng dụng để cấp quyền truy cập cho người dùng. 
 - Nếu người dùng không có thông tin chứng thực đã xác minh, dịch vụ SSO sẽ chuyển hướng người dùng đến hệ thống đăng nhập trung tâm và nhắc người dùng gửi tên người dùng và mật khẩu của họ.
 - Sau khi gửi, dịch vụ xác mình thông tin chứng thực của người dùng và gửi phản hồi tích cực cho ứng dụng. 
-- Nếu không, người dùng sẽ nhận được thông báo lỗi và phải nhập lại thông tin chứng thực. Nhiều lần đăng nhập không thành công có thể dẫn đến việc dịch vụ chặn người dùng thử đăng nhập lại trong một khoảng thời gian cố định. 
+- Nếu không, người dùng sẽ nhận được thông báo lỗi và phải nhập lại thông tin chứng thực. Nhiều lần đăng nhập không thành công có thể dẫn đến việc dịch vụ chặn người dùng thử đăng nhập lại trong một khoảng thời gian cố định.
