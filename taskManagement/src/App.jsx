@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import ResponsiveAppBar from './components/header'
 import TaskList from './components/TaskList'
+import './App.css'
 
 function App() {
 

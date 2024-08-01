@@ -29,7 +29,7 @@ const ExpandMore = styled((props) => {
   }),
 }));
 
-export default function TaskItem() {
+export default function TaskItem({taskname,suggest,description,rangePicker}) {
   const [expanded, setExpanded] = React.useState(false);
   const [checked, setChecked] = useState(false);
 
@@ -49,14 +49,12 @@ export default function TaskItem() {
             <Checkbox checked={checked} onChange={toggleCheckbox} />
           </IconButton>
         }
-        title="Shrimp and Chorizo Paella"
-        subheader="September 14, 2016"
+        title= {taskname}
+        subheader = {rangePicker}
       />
       <CardContent>
         <Typography variant="body2" color="text.secondary">
-          This impressive paella is a perfect party dish and a fun meal to cook
-          together with your guests. Add 1 cup of frozen peas along with the
-          mussels, if you like.
+          {suggest}
         </Typography>
       </CardContent>
       <CardActions disableSpacing>
@@ -77,7 +75,7 @@ export default function TaskItem() {
       </CardActions>
       <Collapse in={expanded} timeout="auto" unmountOnExit>
         <CardContent>
-          <Typography paragraph>Description</Typography>
+          <Typography paragraph>{description}</Typography>
         </CardContent>
       </Collapse>
     </Card>
